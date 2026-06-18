@@ -4,6 +4,15 @@ All notable changes to this extension are documented here. The format
 is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.0.7] - 2026-06-18
+
+### Changed
+- README.md rewritten to match Panth Infotech gold template: gold-standard
+  section order, Quick Answer block, correct system.xml Configuration table,
+  accurate feature coverage, updated canonical URL and badges.
+
+---
+
 ## [1.1.0] — Marketplace preparation
 
 ### Changed
