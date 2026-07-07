@@ -1,7 +1,4 @@
 <?php
-/**
- * Copyright © Panth Infotech. All rights reserved.
- */
 declare(strict_types=1);
 
 namespace Panth\CoreWebVitals\Test\Unit\Helper;
@@ -13,21 +10,10 @@ use Magento\Store\Model\ScopeInterface;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 
-/**
- * Unit tests for CoreWebVitals Data Helper
- *
- * @covers \Panth\CoreWebVitals\Helper\Data
- */
 class DataTest extends TestCase
 {
-    /**
-     * @var Data
-     */
     private Data $helper;
 
-    /**
-     * @var ScopeConfigInterface|MockObject
-     */
     private $scopeConfigMock;
 
     protected function setUp(): void
@@ -38,10 +24,6 @@ class DataTest extends TestCase
 
         $this->helper = new Data($contextMock);
     }
-
-    // =====================================================================
-    // General Settings
-    // =====================================================================
 
     public function testIsEnabledReturnsTrue(): void
     {
@@ -93,10 +75,6 @@ class DataTest extends TestCase
         $this->assertTrue($this->helper->isRealUserMonitoring());
     }
 
-    // =====================================================================
-    // LCP Settings
-    // =====================================================================
-
     public function testIsLcpEnabledRequiresModuleEnabled(): void
     {
         $this->scopeConfigMock->method('getValue')
@@ -125,10 +103,6 @@ class DataTest extends TestCase
 
         $this->assertEquals(2500, $this->helper->getTargetLcp());
     }
-
-    // =====================================================================
-    // FID / INP Settings
-    // =====================================================================
 
     public function testIsFidEnabledReturnsTrueWhenBothEnabled(): void
     {
@@ -159,10 +133,6 @@ class DataTest extends TestCase
         $this->assertEquals(200, $this->helper->getTargetInp());
     }
 
-    // =====================================================================
-    // CLS Settings
-    // =====================================================================
-
     public function testIsClsEnabledReturnsTrueWhenBothEnabled(): void
     {
         $this->scopeConfigMock->method('getValue')
@@ -182,10 +152,6 @@ class DataTest extends TestCase
 
         $this->assertEquals(0.1, $this->helper->getTargetCls());
     }
-
-    // =====================================================================
-    // Resource Hints
-    // =====================================================================
 
     public function testGetDnsPrefetchDomainsParsesNewlines(): void
     {
@@ -243,10 +209,6 @@ class DataTest extends TestCase
 
         $this->assertEmpty($this->helper->getPrefetchUrls());
     }
-
-    // =====================================================================
-    // JSON Config
-    // =====================================================================
 
     public function testGetConfigJsonReturnsValidJson(): void
     {

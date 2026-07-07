@@ -1,7 +1,4 @@
 <?php
-/**
- * Copyright © Panth Infotech. All rights reserved.
- */
 declare(strict_types=1);
 
 namespace Panth\CoreWebVitals\Model\Config\Source;
@@ -10,11 +7,6 @@ use Magento\Framework\Data\OptionSourceInterface;
 
 class FontLoadingStrategy implements OptionSourceInterface
 {
-    /**
-     * Options getter
-     *
-     * @return array
-     */
     public function toOptionArray(): array
     {
         return [
@@ -26,11 +18,6 @@ class FontLoadingStrategy implements OptionSourceInterface
         ];
     }
 
-    /**
-     * Get options in "key-value" format
-     *
-     * @return array
-     */
     public function toArray(): array
     {
         return [
