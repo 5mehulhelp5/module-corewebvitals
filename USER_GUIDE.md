@@ -1,4 +1,4 @@
-# Panth Core Web Vitals — User Guide
+# Panth Core Web Vitals - User Guide
 
 This guide is for store administrators who want to set up real-time
 Core Web Vitals monitoring on their Magento 2 storefront using the
@@ -119,9 +119,9 @@ Resource hints tell the browser to resolve DNS, establish connections,
 or fetch resources ahead of time. Configure them under
 **Resource Hints** in the admin:
 
-- **dns-prefetch** — resolves a domain name early, saving DNS lookup time
-- **preconnect** — performs the full handshake (DNS + TCP + TLS) early
-- **prefetch** — downloads a resource at low priority for use on the
+- **dns-prefetch** - resolves a domain name early, saving DNS lookup time
+- **preconnect** - performs the full handshake (DNS + TCP + TLS) early
+- **prefetch** - downloads a resource at low priority for use on the
   next page navigation
 
 These are rendered as `<link>` tags near the top of the page.

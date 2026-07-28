@@ -138,7 +138,7 @@ Performance • SEO • Adobe Commerce Cloud
 - **Browser CustomEvents** dispatched for each metric (`coreWebVitals:lcp`, `coreWebVitals:fid`, `coreWebVitals:inp`, `coreWebVitals:cls`) for third-party integrations.
 
 ### Admin and Code Quality
-- **Admin section** at Stores → Configuration → Panth Extensions → Core Web Vitals.
+- **Admin section** at Stores -> Configuration -> Panth Extensions -> Core Web Vitals.
 - **Scope-aware settings** that respect Magento's default, website, and store view hierarchy.
 - **MEQP-style code** with constructor DI only and no ObjectManager.
 - **Translation ready**, every label uses Magento's `__()` function.
@@ -201,7 +201,7 @@ bin/magento module:status Panth_CoreWebVitals
 
 After install, open:
 ```
-Admin → Stores → Configuration → Panth Extensions → Core Web Vitals
+Admin -> Stores -> Configuration -> Panth Extensions -> Core Web Vitals
 ```
 
 Set **Enable Module = Yes** and flush the cache.
@@ -210,7 +210,7 @@ Set **Enable Module = Yes** and flush the cache.
 
 ## Configuration
 
-Go to **Stores → Configuration → Panth Extensions → Core Web Vitals**.
+Go to **Stores -> Configuration -> Panth Extensions -> Core Web Vitals**.
 
 ### General Settings
 

@@ -115,7 +115,7 @@
             <!-- CLS Monitoring Settings -->
             <group id="cls" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>CLS (Cumulative Layout Shift) Monitoring</label>
-                <comment><![CDATA[CLS measures visual stability — how much the page content shifts unexpectedly during loading. Google considers < 0.1 "good".]]></comment>
+                <comment><![CDATA[CLS measures visual stability - how much the page content shifts unexpectedly during loading. Google considers < 0.1 "good".]]></comment>
                 <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Monitor CLS</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
@@ -147,7 +147,7 @@
                 </field>
                 <field id="preconnect" translate="label comment" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Preconnect Domains</label>
-                    <comment><![CDATA[One domain per line, without protocol (e.g., <code>fonts.gstatic.com</code>). Outputs <code>&lt;link rel="preconnect" crossorigin&gt;</code> tags. Preconnect performs DNS + TCP + TLS handshake early. Use sparingly — limit to 2-4 critical origins.]]></comment>
+                    <comment><![CDATA[One domain per line, without protocol (e.g., <code>fonts.gstatic.com</code>). Outputs <code>&lt;link rel="preconnect" crossorigin&gt;</code> tags. Preconnect performs DNS + TCP + TLS handshake early. Use sparingly - limit to 2-4 critical origins.]]></comment>
                     <depends>
                         <field id="panth_corewebvitals/general/enabled">1</field>
                     </depends>
