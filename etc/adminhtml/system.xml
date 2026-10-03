@@ -1,0 +1,170 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Panth Infotech. All rights reserved.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="panth" translate="label" sortOrder="400">
+            <label>🚀 Panth Extensions</label>
+        </tab>
+
+        <section id="panth_corewebvitals" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Core Web Vitals</label>
+            <tab>panth</tab>
+            <resource>Panth_CoreWebVitals::config</resource>
+
+            <!-- General Settings -->
+            <group id="general" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General Settings</label>
+                <comment><![CDATA[Enable Core Web Vitals monitoring to track LCP, FID/INP, and CLS metrics using the browser's native PerformanceObserver API.]]></comment>
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Module</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Master switch. When enabled, injects a lightweight JavaScript snippet on every frontend page that monitors Core Web Vitals using the PerformanceObserver API.]]></comment>
+                </field>
+                <field id="debug_mode" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Debug Mode</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[When enabled, all collected metrics (LCP, FID, INP, CLS) are logged to the browser's developer console. Also exposes <code>window.coreWebVitalsMetrics</code> for inspection. Disable in production.]]></comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="real_user_monitoring" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Send Metrics to Analytics</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[When enabled, the final value of each collected metric is sent once per page view (and again only if it changes) to Google Analytics 4 (when <code>gtag</code> is on the page) and/or to the custom beacon URL below using <code>navigator.sendBeacon</code>.]]></comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="endpoint_url" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Custom Beacon Endpoint URL</label>
+                    <validate>validate-url</validate>
+                    <comment><![CDATA[Absolute URL that receives a JSON body via <code>navigator.sendBeacon</code> with the final value of each collected metric (LCP, FID, INP, CLS) when the visitor leaves or hides the page. Leave blank to skip the beacon send. The receiving endpoint MUST accept POST with <code>Content-Type: application/json</code> and respond with 2xx.]]></comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                        <field id="real_user_monitoring">1</field>
+                    </depends>
+                </field>
+                <field id="ga4_measurement_id" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>GA4 Measurement ID</label>
+                    <comment><![CDATA[Optional. Format <code>G-XXXXXXX</code>. Used as the <code>send_to</code> target in <code>gtag('event', 'web_vitals', {...})</code> so metrics are routed to the right GA4 property even when the page also reports to a different default property. Leave blank to use the default <code>gtag</code> destination.]]></comment>
+                    <depends>
+                        <field id="enabled">1</field>
+                        <field id="real_user_monitoring">1</field>
+                    </depends>
+                </field>
+            </group>
+
+            <!-- LCP Monitoring Settings -->
+            <group id="lcp" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>LCP (Largest Contentful Paint) Monitoring</label>
+                <comment><![CDATA[LCP measures the time it takes for the largest visible element (image, text block, video) to render. Google considers < 2500ms "good".]]></comment>
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Monitor LCP</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Track Largest Contentful Paint using the <code>largest-contentful-paint</code> PerformanceObserver entry type.]]></comment>
+                    <depends>
+                        <field id="panth_corewebvitals/general/enabled">1</field>
+                    </depends>
+                </field>
+                <field id="target_lcp" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Target LCP (milliseconds)</label>
+                    <comment><![CDATA[Your target LCP time. Used to rate metrics as "good", "needs improvement", or "poor" in console output and analytics events. Google recommends < 2500ms.]]></comment>
+                    <validate>validate-number validate-greater-than-zero</validate>
+                    <depends>
+                        <field id="panth_corewebvitals/general/enabled">1</field>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+
+            <!-- FID/INP Monitoring Settings -->
+            <group id="fid" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>FID / INP (Interaction Responsiveness) Monitoring</label>
+                <comment><![CDATA[FID measures the delay before the browser processes the first user interaction. INP measures the worst interaction latency throughout the page lifecycle. INP replaced FID as a Core Web Vital in March 2024.]]></comment>
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Monitor FID and INP</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Track First Input Delay (<code>first-input</code> entry type) and Interaction to Next Paint (<code>event</code> entry type with durationThreshold).]]></comment>
+                    <depends>
+                        <field id="panth_corewebvitals/general/enabled">1</field>
+                    </depends>
+                </field>
+                <field id="target_fid" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Target FID (milliseconds)</label>
+                    <comment><![CDATA[Your target First Input Delay. Google recommends < 100ms.]]></comment>
+                    <validate>validate-number validate-greater-than-zero</validate>
+                    <depends>
+                        <field id="panth_corewebvitals/general/enabled">1</field>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+                <field id="target_inp" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Target INP (milliseconds)</label>
+                    <comment><![CDATA[Your target Interaction to Next Paint. Google recommends < 200ms. INP is the primary interaction metric since March 2024.]]></comment>
+                    <validate>validate-number validate-greater-than-zero</validate>
+                    <depends>
+                        <field id="panth_corewebvitals/general/enabled">1</field>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+
+            <!-- CLS Monitoring Settings -->
+            <group id="cls" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>CLS (Cumulative Layout Shift) Monitoring</label>
+                <comment><![CDATA[CLS measures visual stability - how much the page content shifts unexpectedly during loading. Google considers < 0.1 "good".]]></comment>
+                <field id="enabled" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Monitor CLS</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment><![CDATA[Track Cumulative Layout Shift using the <code>layout-shift</code> PerformanceObserver entry type. Only counts shifts without recent user input.]]></comment>
+                    <depends>
+                        <field id="panth_corewebvitals/general/enabled">1</field>
+                    </depends>
+                </field>
+                <field id="target_cls" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Target CLS Score</label>
+                    <comment><![CDATA[Your target CLS score. This is a unitless value. Google recommends < 0.1.]]></comment>
+                    <validate>validate-number validate-greater-than-zero</validate>
+                    <depends>
+                        <field id="panth_corewebvitals/general/enabled">1</field>
+                        <field id="enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+
+            <!-- Resource Hints -->
+            <group id="resource_hints" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Resource Hints</label>
+                <comment><![CDATA[Resource hints tell the browser to resolve DNS, establish connections, or fetch resources ahead of time. This reduces latency for external origins like CDNs, font providers, and analytics services.]]></comment>
+                <field id="dns_prefetch" translate="label comment" type="textarea" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>DNS Prefetch Domains</label>
+                    <comment><![CDATA[One domain per line, without protocol (e.g., <code>fonts.googleapis.com</code>). Outputs <code>&lt;link rel="dns-prefetch"&gt;</code> tags in the page head. DNS prefetch resolves the domain name early, saving 20-120ms per domain on first request.]]></comment>
+                    <depends>
+                        <field id="panth_corewebvitals/general/enabled">1</field>
+                    </depends>
+                </field>
+                <field id="preconnect" translate="label comment" type="textarea" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Preconnect Domains</label>
+                    <comment><![CDATA[One domain per line, without protocol (e.g., <code>fonts.gstatic.com</code>). Outputs <code>&lt;link rel="preconnect" crossorigin&gt;</code> tags. Preconnect performs DNS + TCP + TLS handshake early. Use sparingly - limit to 2-4 critical origins.]]></comment>
+                    <depends>
+                        <field id="panth_corewebvitals/general/enabled">1</field>
+                    </depends>
+                </field>
+                <field id="prefetch" translate="label comment" type="textarea" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Prefetch URLs</label>
+                    <comment><![CDATA[One full URL per line (e.g., <code>https://cdn.example.com/critical.js</code>). Outputs <code>&lt;link rel="prefetch"&gt;</code> tags. Prefetch downloads resources at low priority for use on the <strong>next</strong> navigation. Do not use for resources needed on the current page.]]></comment>
+                    <depends>
+                        <field id="panth_corewebvitals/general/enabled">1</field>
+                    </depends>
+                </field>
+            </group>
+
+        </section>
+    </system>
+</config>

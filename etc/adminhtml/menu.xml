@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Backend:etc/menu.xsd">
+    <menu>
+        <add id="Panth_CoreWebVitals::group"
+             title="Core Web Vitals"
+             module="Panth_CoreWebVitals"
+             sortOrder="95"
+             parent="Panth_Core::panth_extensions"
+             resource="Panth_CoreWebVitals::config"/>
+        <add id="Panth_CoreWebVitals::settings"
+             title="Configuration"
+             module="Panth_CoreWebVitals"
+             sortOrder="10"
+             parent="Panth_CoreWebVitals::group"
+             action="adminhtml/system_config/edit/section/panth_corewebvitals"
+             resource="Panth_CoreWebVitals::config"/>
+    </menu>
+</config>

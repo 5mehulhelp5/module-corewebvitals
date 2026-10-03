@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Panth Infotech. All rights reserved.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <panth_corewebvitals>
+            <general>
+                <enabled>0</enabled>
+                <debug_mode>0</debug_mode>
+                <real_user_monitoring>1</real_user_monitoring>
+                <endpoint_url></endpoint_url>
+                <ga4_measurement_id></ga4_measurement_id>
+            </general>
+            <lcp>
+                <enabled>1</enabled>
+                <target_lcp>2500</target_lcp>
+            </lcp>
+            <fid>
+                <enabled>1</enabled>
+                <target_fid>100</target_fid>
+                <target_inp>200</target_inp>
+            </fid>
+            <cls>
+                <enabled>1</enabled>
+                <target_cls>0.1</target_cls>
+            </cls>
+        </panth_corewebvitals>
+    </default>
+</config>

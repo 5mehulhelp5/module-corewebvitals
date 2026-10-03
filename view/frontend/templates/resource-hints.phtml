@@ -1,0 +1,21 @@
+<?php
+/**
+ * Copyright © Panth Infotech. All rights reserved.
+ *
+ * @var \Panth\CoreWebVitals\Block\ResourceHints $block
+ * @var \Magento\Framework\Escaper $escaper
+ */
+
+if (!$block->isEnabled()) {
+    return;
+}
+?>
+<?php foreach ($block->getDnsPrefetchHrefs() as $href): ?>
+<link rel="dns-prefetch" href="<?= $escaper->escapeUrl($href) ?>">
+<?php endforeach; ?>
+<?php foreach ($block->getPreconnectOrigins() as $origin): ?>
+<link rel="preconnect" href="<?= $escaper->escapeUrl($origin) ?>" crossorigin>
+<?php endforeach; ?>
+<?php foreach ($block->getUniquePrefetchUrls() as $url): ?>
+<link rel="prefetch" href="<?= $escaper->escapeUrl($url) ?>">
+<?php endforeach; ?>

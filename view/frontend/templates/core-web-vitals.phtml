@@ -1,0 +1,306 @@
+<?php
+/**
+ * Copyright © Panth Infotech. All rights reserved.
+ *
+ * Core Web Vitals monitoring script.
+ *
+ * Uses the browser-native PerformanceObserver API to measure:
+ *   - LCP  (Largest Contentful Paint)  - largest-contentful-paint entry type
+ *   - FID  (First Input Delay)         - first-input entry type
+ *   - INP  (Interaction to Next Paint) - event entry type with durationThreshold
+ *   - CLS  (Cumulative Layout Shift)   - layout-shift entry type
+ *
+ * Metrics are optionally:
+ *   - Logged to browser console (debug mode)
+ *   - Sent to GA4 via gtag() or to a custom endpoint via navigator.sendBeacon
+ *   - Exposed on window.coreWebVitalsMetrics for manual inspection
+ *   - Dispatched as CustomEvents (e.g. "coreWebVitals:lcp")
+ *
+ * @var \Panth\CoreWebVitals\Block\CoreWebVitals $block
+ */
+
+if (!$block->isEnabled()) {
+    return;
+}
+
+$config = $block->getConfigJson();
+?>
+
+<script>
+/**
+ * Core Web Vitals Monitoring - PerformanceObserver implementation
+ */
+(function() {
+    'use strict';
+
+    var cfg = <?= /* @noEscape */ $config ?>;
+
+    if (!cfg.enabled || !('PerformanceObserver' in window)) {
+        return;
+    }
+
+    /** Collected metrics */
+    var metrics = { lcp: null, fid: null, inp: null, cls: null };
+
+    /** Google's rating thresholds */
+    var thresholds = {
+        lcp: [2500, 4000],
+        fid: [100, 300],
+        inp: [200, 500],
+        cls: [0.1, 0.25]
+    };
+
+    function applyTarget(name, target) {
+        var t = Number(target);
+        if (isFinite(t) && t > 0) {
+            thresholds[name] = [t, Math.max(t, thresholds[name][1])];
+        }
+    }
+
+    applyTarget('lcp', cfg.lcp && cfg.lcp.target);
+    applyTarget('fid', cfg.fid && cfg.fid.targetFid);
+    applyTarget('inp', cfg.fid && cfg.fid.targetInp);
+    applyTarget('cls', cfg.cls && cfg.cls.target);
+
+    /**
+     * Rate a metric value as "good", "needs-improvement", or "poor"
+     */
+    function rate(name, value) {
+        var t = thresholds[name];
+        if (!t) return 'unknown';
+        if (value <= t[0]) return 'good';
+        if (value <= t[1]) return 'needs-improvement';
+        return 'poor';
+    }
+
+    /**
+     * Log a metric to the console when debug mode is on
+     */
+    function log(label, data) {
+        if (cfg.debug) {
+            console.log('[Core Web Vitals] ' + label + ':', data);
+        }
+    }
+
+    /**
+     * Send a metric to analytics when RUM is enabled. Two channels, either
+     * or both may fire depending on admin config:
+     *   1. Google Analytics 4 via gtag(). When ga4Id is set we route the
+     *      event explicitly to that property via send_to.
+     *   2. Custom beacon endpoint via navigator.sendBeacon (POST JSON).
+     */
+    function report(metric) {
+        if (!cfg.rum) return;
+
+        if (window.gtag) {
+            var params = {
+                event_category: 'Web Vitals',
+                value: Math.round(metric.name === 'CLS' ? metric.value * 1000 : metric.value),
+                event_label: metric.id,
+                metric_rating: metric.rating,
+                non_interaction: true
+            };
+            if (cfg.ga4Id) {
+                params.send_to = cfg.ga4Id;
+            }
+            gtag('event', metric.name, params);
+        }
+
+        // Admin-configured endpoint takes precedence; fall back to a
+        // window-global hook for sites that prefer to wire the URL in JS.
+        var beaconUrl = cfg.endpointUrl || window.panthCoreWebVitalsEndpoint;
+        if (beaconUrl && navigator.sendBeacon) {
+            try {
+                var blob = new Blob([JSON.stringify({
+                    name: metric.name,
+                    value: metric.value,
+                    rating: metric.rating,
+                    id: metric.id,
+                    delta: metric.delta,
+                    page: location.pathname + location.search,
+                    timestamp: Date.now()
+                })], { type: 'application/json' });
+                navigator.sendBeacon(beaconUrl, blob);
+            } catch (e) {
+                log('beacon error', e.message);
+            }
+        }
+    }
+
+    var pending = {};
+    var reported = {};
+
+    function flush() {
+        Object.keys(pending).forEach(function(name) {
+            var metric = pending[name];
+            var last = reported[name] || 0;
+            if (metric.value === last && reported.hasOwnProperty(name)) return;
+            reported[name] = metric.value;
+            report({
+                name: metric.name,
+                value: metric.value,
+                rating: metric.rating,
+                id: metric.id,
+                delta: metric.value - last
+            });
+        });
+        pending = {};
+    }
+
+    /**
+     * Process a collected metric
+     */
+    function handle(metric) {
+        var key = metric.name.toLowerCase();
+        var rating = rate(key, metric.value);
+        metric.rating = rating;
+
+        metrics[key] = {
+            value: metric.value,
+            rating: rating,
+            id: metric.id,
+            delta: metric.delta,
+            entries: metric.entries
+        };
+
+        log(metric.name, {
+            value: metric.name === 'CLS' ? metric.value.toFixed(4) : Math.round(metric.value) + 'ms',
+            rating: rating
+        });
+
+        pending[metric.name] = metric;
+
+        // Dispatch a DOM event so other scripts can react
+        window.dispatchEvent(new CustomEvent('coreWebVitals:' + key, {
+            detail: metrics[key]
+        }));
+    }
+
+    /**
+     * Safely create a PerformanceObserver
+     */
+    function observe(type, callback, opts) {
+        try {
+            var po = new PerformanceObserver(callback);
+            po.observe(Object.assign({ type: type, buffered: true }, opts || {}));
+        } catch (e) {
+            log(type + ' observer error', e.message);
+        }
+    }
+
+    // --- LCP ---
+    if (cfg.lcp && cfg.lcp.enabled) {
+        var lcpFinal = false;
+        var stopLcp = function() {
+            lcpFinal = true;
+        };
+        ['keydown', 'click'].forEach(function(type) {
+            window.addEventListener(type, stopLcp, { once: true, capture: true, passive: true });
+        });
+        observe('largest-contentful-paint', function(list) {
+            if (lcpFinal) return;
+            var entries = list.getEntries();
+            var last = entries[entries.length - 1];
+            if (!last) return;
+            var value = last.startTime;
+            handle({
+                name: 'LCP',
+                value: value,
+                id: 'lcp-' + Date.now(),
+                delta: value,
+                entries: [last]
+            });
+        });
+    }
+
+    // --- FID ---
+    if (cfg.fid && cfg.fid.enabled) {
+        observe('first-input', function(list) {
+            var entry = list.getEntries()[0];
+            if (!entry) return;
+            var value = entry.processingStart - entry.startTime;
+            handle({
+                name: 'FID',
+                value: value,
+                id: 'fid-' + Date.now(),
+                delta: value,
+                entries: [entry]
+            });
+        });
+    }
+
+    // --- INP ---
+    if (cfg.fid && cfg.fid.enabled) {
+        var worstInp = 0;
+        observe('event', function(list) {
+            list.getEntries().forEach(function(entry) {
+                // INP is the single worst interaction duration on the page.
+                // entry.duration already accounts for input delay + processing + presentation.
+                if (entry.interactionId && entry.duration > worstInp) {
+                    worstInp = entry.duration;
+                    handle({
+                        name: 'INP',
+                        value: worstInp,
+                        id: 'inp-' + Date.now(),
+                        delta: entry.duration,
+                        entries: [entry]
+                    });
+                }
+            });
+        }, { durationThreshold: 16 });
+    }
+
+    // --- CLS ---
+    if (cfg.cls && cfg.cls.enabled) {
+        var clsValue = 0;
+        var sessionValue = 0;
+        var sessionEntries = [];
+
+        observe('layout-shift', function(list) {
+            list.getEntries().forEach(function(entry) {
+                // Ignore shifts caused by recent user input (clicks, taps, key presses)
+                if (entry.hadRecentInput) return;
+
+                // Session window: gap < 1s, total < 5s
+                var lastEntry = sessionEntries[sessionEntries.length - 1];
+                if (lastEntry &&
+                    entry.startTime - lastEntry.startTime < 1000 &&
+                    entry.startTime - sessionEntries[0].startTime < 5000
+                ) {
+                    sessionValue += entry.value;
+                    sessionEntries.push(entry);
+                } else {
+                    sessionValue = entry.value;
+                    sessionEntries = [entry];
+                }
+
+                if (sessionValue > clsValue) {
+                    clsValue = sessionValue;
+                    handle({
+                        name: 'CLS',
+                        value: clsValue,
+                        id: 'cls-' + Date.now(),
+                        delta: entry.value,
+                        entries: sessionEntries.slice()
+                    });
+                }
+            });
+        });
+    }
+
+    // Expose metrics for debugging
+    if (cfg.debug) {
+        window.coreWebVitalsMetrics = metrics;
+    }
+
+    // Log final summary on page unload
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState !== 'hidden') return;
+        flush();
+        if (cfg.debug) {
+            console.log('[Core Web Vitals] Final metrics:', JSON.parse(JSON.stringify(metrics)));
+        }
+    });
+    window.addEventListener('pagehide', flush);
+})();
+</script>
